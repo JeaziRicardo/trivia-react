@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import '../styles/Ranking.css';
+import logo from '../trivia.png';
 
 class Ranking extends React.Component {
   state = {
@@ -8,7 +10,9 @@ class Ranking extends React.Component {
 
   componentDidMount() {
     const RankingToLocalStorage = JSON.parse(localStorage.getItem('ranking'));
-    this.setState({ ranking: RankingToLocalStorage.sort((a, b) => b.score - a.score) });
+    if (RankingToLocalStorage) {
+      this.setState({ ranking: RankingToLocalStorage.sort((a, b) => b.score - a.score) });
+    }
   }
 
   backToLogin = () => {
@@ -18,12 +22,12 @@ class Ranking extends React.Component {
 
   render() {
     const { ranking } = this.state;
+    const RANK_LENGTH = 4;
     return (
       <>
-        <header data-testid="ranking-title">
-          Tela de Ranking
-        </header>
-        <main>
+        <header className="ranking-title" data-testid="ranking-title">
+          <img src={ logo } alt="logo-trivia" />
+          <h1>Ranking</h1>
           <button
             type="button"
             data-testid="btn-go-home"
@@ -31,15 +35,23 @@ class Ranking extends React.Component {
           >
             Login
           </button>
-          <div>
+        </header>
+        <main>
+          <div className="container-ranking">
             <ul>
               { ranking.length !== 0 ? (
-                ranking.map((player, index) => (
+                ranking.map((player, index) => index <= RANK_LENGTH && (
                   <li key={ index }>
-                    <div data-testid={ `player-name-${index}` }>{player.name}</div>
-                    <div data-testid={ `player-score-${index}` }>{player.score}</div>
+                    <p>{ `0 ${index + 1}` }</p>
+                    <img src={ player.picture } alt={ `Foto de ${player.name}` } />
+                    <p data-testid={ `player-name-${index}` }>{player.name}</p>
+                    <p>
+                      <span data-testid={ `player-score-${index}` }>{player.score}</span>
+                      { ' ' }
+                      Pts
+                    </p>
                   </li>))
-              ) : null }
+              ) : <h3>Você ainda não jogou</h3> }
             </ul>
           </div>
         </main>

@@ -38,6 +38,7 @@ class Login extends React.Component {
     setHashAction(md5(info.gravatarEmail).toString());
     const token = await this.fetchToken();
     localStorage.setItem('token', token);
+    // this.storage();
     const { history } = this.props;
     history.push('/game');
   };
@@ -56,6 +57,7 @@ class Login extends React.Component {
                 type="text"
                 data-testid="input-player-name"
                 id="name"
+                required
                 value={ name }
                 onChange={ this.handleChange }
               />
@@ -69,6 +71,7 @@ class Login extends React.Component {
                 type="email"
                 data-testid="input-gravatar-email"
                 id="email"
+                required
                 value={ email }
                 onChange={ this.handleChange }
               />
@@ -83,6 +86,14 @@ class Login extends React.Component {
             onClick={ () => this.handleClick({ name, gravatarEmail: email }) }
           >
             Play
+          </button>
+
+          <button
+            name="ranking"
+            type="button"
+            onClick={ () => history.push('/ranking') }
+          >
+            Ranking
           </button>
 
           <button

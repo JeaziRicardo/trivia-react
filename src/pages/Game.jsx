@@ -1,7 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import propTypes from 'prop-types';
+import he from 'he';
 import { actionSumAcertion, actionSumScore } from '../redux/action';
+import '../styles/Game.css';
+import image from '../trivia.png';
+import Timer from '../components/Timer';
 
 class Game extends React.Component {
   state = {
@@ -19,46 +23,48 @@ class Game extends React.Component {
   }
 
   componentDidUpdate(_null, prevState) {
-    if (prevState.time === 1) {
-      clearInterval(this.interval);
-    }
+    if (prevState.time === 1) clearInterval(this.interval);
   }
 
   componentWillUnmount() {
     const { name, hash, score } = this.props;
     const picture = `https://www.gravatar.com/avatar/${hash}`;
+    console.log(picture);
     const localStorageAtual = JSON.parse(localStorage.getItem('ranking'));
     if (!localStorageAtual) {
-      localStorage.setItem('ranking', JSON.stringify([{ name, picture, score }]));
+      localStorage.setItem('ranking',
+        JSON.stringify([{ name, picture, score }]));
     }
     if (localStorageAtual) {
-      localStorage
-        .setItem(
-          'ranking', JSON.stringify([...localStorageAtual, { name, picture, score }]),
-        );
+      localStorage.setItem('ranking',
+        JSON.stringify([...localStorageAtual, { name, picture, score }]));
     }
   }
 
   tokenDenied = () => {
-    const {
-      history: { push },
-    } = this.props;
+    const { history: { push } } = this.props;
     localStorage.removeItem('token');
     push('/');
   };
 
   getQuestions = async () => {
+    const { name, history } = this.props;
+    if (!name) {
+      history.push('/');
+    }
     const denied = 3;
     const token = localStorage.getItem('token');
-    const request = await fetch(
-      `https://opentdb.com/api.php?amount=5&token=${token}`,
-    );
+    const settings = JSON.parse(localStorage.getItem('settings'));
+    const number = 5;
+    let request;
+    if (settings) {
+      (request = await fetch(`https://opentdb.com/api.php?amount=${settings.Number ? settings.Number : number}&category=${settings.Category ? settings.Category : ''}&difficulty=${settings.Difficulty ? settings.Difficulty : ''}&type=${settings.Type ? settings.Type : ''}&token=${token}`));
+    } else {
+      request = await fetch(`https://opentdb.com/api.php?amount=5&token=${token}`);
+    }
     const json = await request.json();
-    // console.log(json);
     if (json.response_code === denied) return this.tokenDenied();
-    this.setState({ questions: json.results }, () => {
-      this.shuffleQuestions();
-    });
+    this.setState({ questions: json.results }, () => this.shuffleQuestions());
   };
 
   shuffleArray = (array) => {
@@ -66,8 +72,7 @@ class Game extends React.Component {
     for (let i = arr.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
+    } return arr;
   };
 
   shuffleQuestions = () => {
@@ -88,12 +93,9 @@ class Game extends React.Component {
     const MEDIUM = 2;
     const EASY = 1;
     switch (currentQuestion.difficulty) {
-    case 'easy':
-      return EASY;
-    case 'medium':
-      return MEDIUM;
-    default:
-      return HARD;
+    case 'easy': return EASY;
+    case 'medium': return MEDIUM;
+    default: return HARD;
     }
   };
 
@@ -157,28 +159,31 @@ class Game extends React.Component {
     const { hash, name, score } = this.props;
     const { questions, questionIndex, correct, shuffle, isRunning, time } = this.state;
     return (
-      <div>
-        <header>
-          <p data-testid="header-player-name">{name}</p>
-          <p data-testid="header-score">{score}</p>
-          <img
-            src={ `https://www.gravatar.com/avatar/${hash}` }
-            alt="profileimage"
-            data-testid="header-profile-picture"
-          />
+      <div className="container-player-info">
+        <header className="header">
+          <div className="logo-trivia"><img src={ image } alt="logo-game" /></div>
+          <div className="info-game">
+            <Timer time={ time } />
+            <p data-testid="header-score">{`Pontos: ${score}`}</p>
+          </div>
+          <div className="info-player">
+            <p data-testid="header-player-name">{name}</p>
+            <img
+              src={ `https://www.gravatar.com/avatar/${hash}` }
+              alt="profileimage"
+              data-testid="header-profile-picture"
+            />
+          </div>
         </header>
-        <main>
-          <span data-testid="timer">{time}</span>
+        <main className="container-game">
           {questions.length && (
-            <div>
-              <p data-testid="question-category">
-                {questions[questionIndex].category}
-              </p>
-              <p>{questions[questionIndex].difficulty}</p>
+            <div className="game">
               <p data-testid="question-text">
-                {questions[questionIndex].question}
+                {he.decode(questions[questionIndex].question)}
               </p>
-              <div data-testid="answer-options">
+              <p data-testid="question-category">{questions[questionIndex].category}</p>
+              <p>{questions[questionIndex].difficulty}</p>
+              <div data-testid="answer-options" className="answer">
                 {shuffle.map((question, i) => (
                   <button
                     disabled={ time <= 0 || !isRunning }
@@ -188,7 +193,8 @@ class Game extends React.Component {
                     type="button"
                     className={
                       !isRunning
-                        ? this.verifyAnswer(question, shuffle[correct]) : ''
+                        ? this.verifyAnswer(question, shuffle[correct])
+                        : ''
                     }
                     data-testid={
                       question === shuffle[correct]
@@ -200,15 +206,18 @@ class Game extends React.Component {
                   </button>
                 ))}
               </div>
-              {(!isRunning || time === 0) && (
-                <button
-                  type="button"
-                  data-testid="btn-next"
-                  onClick={ this.buttonNext }
-                >
-                  Next
-                </button>
-              )}
+              <div className="containerBtnNext">
+                {(!isRunning || time === 0) && (
+                  <button
+                    type="button"
+                    data-testid="btn-next"
+                    onClick={ this.buttonNext }
+                    className="buttonNext"
+                  >
+                    Next
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </main>

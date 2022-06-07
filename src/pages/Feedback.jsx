@@ -2,6 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { actionResetPlayer } from '../redux/action';
+import triviaImg from '../trivia.png';
+import '../styles/Feedback.css';
 
 class Feedback extends React.Component {
   componentWillUnmount() {
@@ -35,22 +37,32 @@ class Feedback extends React.Component {
   render() {
     const { namePlayer, assertionsPlayer, scorePlayer } = this.props;
     return (
-      <>
-        <header>
-          <img
-            src={ this.catchGravatar() }
-            data-testid="header-profile-picture"
-            alt="Avatar do player"
-          />
-          <p data-testid="header-player-name">{namePlayer}</p>
-          <p data-testid="header-score">{scorePlayer}</p>
+      <div className="feedback-container">
+        <header className="header">
+          <div className="logo-trivia"><img src={ triviaImg } alt="logo-game" /></div>
+          <div className="info-game">
+            <p>Pontos:</p>
+            <span data-testid="header-score">{scorePlayer}</span>
+          </div>
+          <div className="info-player">
+            <p data-testid="header-player-name">{namePlayer}</p>
+            <img
+              src={ this.catchGravatar() }
+              alt="profileimage"
+              data-testid="header-profile-picture"
+            />
+          </div>
         </header>
-        <section>
+        <section className="game-status">
           <p data-testid="feedback-text">{this.feedbackMessage()}</p>
-          <p data-testid="feedback-total-score">{Number(scorePlayer)}</p>
-          <p data-testid="feedback-total-question">{Number(assertionsPlayer)}</p>
+          <span>Pontos:</span>
+          <p data-testid="feedback-total-score">{scorePlayer}</p>
+          <span>Total de acertos:</span>
+          <p data-testid="feedback-total-question">
+            {assertionsPlayer}
+          </p>
         </section>
-        <nav>
+        <nav className="btn-container-feedback">
           <input
             type="button"
             value="Play Again"
@@ -64,7 +76,7 @@ class Feedback extends React.Component {
             onClick={ () => this.rankingButton() }
           />
         </nav>
-      </>
+      </div>
     );
   }
 }
